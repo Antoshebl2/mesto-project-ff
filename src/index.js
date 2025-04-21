@@ -1,7 +1,7 @@
 
 import {initialCards} from './scripts/cards.js'
-import {initCard, delCard, likeCard} from './scripts/card.js'
-import {popupOpen, popupClose} from './scripts/popup.js'
+import {createCard, delCard, likeCard} from './scripts/card.js'
+import {openPopup, closePopup} from './scripts/popup.js'
 
 import './pages/index.css'
 
@@ -34,8 +34,8 @@ const popImgCaption = popImg.querySelector('.popup__caption')
 
 // @todo: Вывести карточки на страницу
 
-function appendCard(obj) {
-  const newCard = initCard(obj, cardTemplate, delCard)
+function appendCard(cardElement) {
+  const newCard = createCard(cardElement, cardTemplate, delCard, openPopupImage, likeCard)
   cardLlist.prepend(newCard);
 }
 
@@ -45,64 +45,63 @@ function cardlistShow() {
 
 cardlistShow()
 
-function handleFormSubmit(evt) {
+function handleProfileFormSubmit(evt) {
   evt.preventDefault();
+  const popupElement  = document.querySelector('.popup_is-opened')
   profileName.textContent = popNameInput.value
   profileProfession.textContent = popJobInput.value
-  popupClose(evt)
+  closePopup(popupElement)
 }
 
 function addNewCard(evt) {
   evt.preventDefault();
+  const popupElement  = document.querySelector('.popup_is-opened')
+  const newName = popCreateNewCard.querySelector('[name="place-name"]')
+  const newLink = popCreateNewCard.querySelector('[name="link"]')
 
-  let newName = popCreateNewCard.querySelector('[name="place-name"]')
-  let newLink = popCreateNewCard.querySelector('[name="link"]')
+  const newCardElement = {
+    name: newName.value,
+    link: newLink.value
+  }
 
-  const obj = {}
-  obj.name = newName.value
-  obj.link = newLink.value
-  appendCard(obj)
+  appendCard(newCardElement)
   newName.value = ''
   newLink.value = ''
-  popupClose(evt)
+  closePopup(popupElement)
 }
+
+function openPopupImage (name, link) {
+  popImgCaption.textContent = name
+  popImgImage.src = link
+  popImgImage.alt = name
+  openPopup(popImg)
+}
+
 
 // listeners
 
 btnEditProfile.addEventListener('click',(evt) => {
   popNameInput.value = profileName.textContent
   popJobInput.value = profileProfession.textContent
-  popupOpen(popEditProfile)
+  openPopup(popEditProfile)
 })
 
 btnCreateNewCard.addEventListener('click',(evt) => {
-  popupOpen(popCreateNewCard)
+  openPopup(popCreateNewCard)
 })
 
 closeBtns.forEach((el) => {
-  el.addEventListener('click', (evt) => {
-    popupClose(evt)
+  const popupElement = el.closest('.popup')
+  el.addEventListener('click', () => {
+    closePopup(popupElement)
+  })
+  popupElement.addEventListener('mousedown', (evt)=> {
+    if(evt.target === popupElement) {
+      closePopup(popupElement)
+    }
   })
 }
 )
 
-page.addEventListener('click',(evt) => {
-  if(evt.target.classList.contains('card__image')) {
-    const curCard = evt.target.closest('.places__item');
-    popImgImage.src = curCard.querySelector('.card__image').src
-    popImgCaption.textContent = curCard.querySelector('.card__title').textContent
-    popupOpen(popImg)
-  }
-  if(evt.target.classList.contains('card__like-button')) {
-    likeCard(evt.target)
-  }
-})
-
-page.addEventListener("mousedown", (evt) => {
-  if(evt.target.classList.contains('popup')) {
-    popupClose(evt)
-  }
-})
-
-profileFormElement.addEventListener('submit', handleFormSubmit);
+profileFormElement.addEventListener('submit', handleProfileFormSubmit);
 newCardFormElement.addEventListener('submit', addNewCard);
