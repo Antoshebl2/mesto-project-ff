@@ -10,9 +10,8 @@ function closePopup(popupElement) {
 
 function closePopupEsc (evt) {
   const popupElement = document.querySelector('.popup_is-opened')
-  if( !!popupElement && (
-    (evt.type === "keydown" && evt.key === 'Escape'))
-  ) { popupElement.classList.remove('popup_is-opened') }
+  if( !!popupElement && evt.key === 'Escape')
+    { popupElement.classList.remove('popup_is-opened') }
 }
 
 
