@@ -1,3 +1,7 @@
+.profile__avatar {
+  position: relative;
+}
+
 .profile__image {
   width: 120px;
   height: 120px;
@@ -19,4 +23,28 @@
   .profile__image {
     margin-right: 0;
   }
+}
+
+.avatar__edit-button {
+  position: absolute;
+  display: none;
+  top: 0;
+  width: 120px;
+  height: 120px;
+  background: transparent url("../../../images/edit-icon.svg") center no-repeat;
+  background-size: 26px 26px;
+  border: none;
+  align-self: center;
+  cursor: pointer;
+  -webkit-transition: 0.3s;
+  -moz-transition: 0.3s;
+  -ms-transition: 0.3s;
+  -o-transition: 0.3s;
+  transition: 0.3s;
+  padding: 0;
+  margin: 0;
+}
+
+.profile__avatar:hover .avatar__edit-button {
+  display: block;
 }
