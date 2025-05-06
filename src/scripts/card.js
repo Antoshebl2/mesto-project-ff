@@ -50,21 +50,30 @@ function createCard (cardElement, template, delCard, openPopupImage, likeCard, u
     .then(() => {
       curCard.remove()
     })
+    .catch((err) => {
+      console.error(err);
+    });
   }
 
   function likeCard(cardLikeBtn, cardID, cardLikeCnt) {
     if(cardLikeBtn.classList.contains('card__like-button_is-active')) {
-      cardLikeBtn.classList.toggle('card__like-button_is-active')
       deleteLike(cardID)
       .then((card) => {
+        cardLikeBtn.classList.toggle('card__like-button_is-active')
         cardLikeCnt.textContent = card.likes.length
       })
+      .catch((err) => {
+        console.error(err);
+      });
     }else {
-      cardLikeBtn.classList.toggle('card__like-button_is-active')
       postLike(cardID)
       .then((card) => {
+        cardLikeBtn.classList.toggle('card__like-button_is-active')
         cardLikeCnt.textContent = card.likes.length
       })
+      .catch((err) => {
+        console.error(err);
+      });
     }
   }
 

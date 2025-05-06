@@ -1,6 +1,6 @@
 import {createCard, delCard, likeCard} from './scripts/card.js'
 import {openPopup, closePopup} from './scripts/popup.js'
-import {validationConfig, enableValidation, clearValidation} from './scripts/validation.js'
+import {enableValidation, clearValidation} from './scripts/validation.js'
 import {getInitialCards, getUser, updateUser, postCard, postAvatar} from './scripts/api.js'
 import './pages/index.css'
 
@@ -24,7 +24,7 @@ const profileImage = document.querySelector('.profile__image')
 
 const profileFormAvatar = document.querySelector('[name="edit-avatar"]')
 const popEditAvatar = document.querySelector('.popup_type_avatar')
-const popAvatarImage = popEditAvatar.querySelector('.popup__input_type_url')
+const popAvatarLinkInput = popEditAvatar.querySelector('[name="avatar-link"]')
 
 const profileFormElement = document.querySelector('[name="edit-profile"]'); //'[name^="data-"]' ".popup__form"
 const popEditProfile = document.querySelector('.popup_type_edit')
@@ -33,20 +33,42 @@ const popJobInput = popEditProfile.querySelector('.popup__input_type_description
 
 const popCreateNewCard = document.querySelector('.popup_type_new-card')
 const newCardFormElement = document.querySelector('[name="new-place"]');
+const newNameInput = popCreateNewCard.querySelector('[name="place-name"]')
+const newLinkInput = popCreateNewCard.querySelector('[name="link"]')
+
 const popImg = document.querySelector('.popup_type_image')
 const popImgImage = popImg.querySelector('.popup__image')
 const popImgCaption = popImg.querySelector('.popup__caption')
 
 // @todo: Вывести карточки на страницу
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+}
+
+function renderLoading (loadStatus, tgtButton) {
+  if(loadStatus){
+    tgtButton.textContent = 'Сохранение...'
+  } else {
+    tgtButton.textContent = 'Сохранить'
+  }
+}
+
 function appendCard(cardElement, userID) {
   const newCard = createCard(cardElement, cardTemplate, delCard, openPopupImage, likeCard, userID)
   cardLlist.prepend(newCard);
 }
 
+let userID = ''
+
 Promise.all([getInitialCards(), getUser()])
 .then(([cards, user]) => {
-  const userID = user._id
+  userID = user._id
 
   profileName.textContent = user.name
   profileProfession.textContent = user.about
@@ -64,61 +86,49 @@ Promise.all([getInitialCards(), getUser()])
 
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
-  const popupElement  = document.querySelector('.popup_is-opened')
-  popupElement.querySelector('.popup__button').textContent = 'Сохранение...'
-
+  const saveBtn = evt.submitter
+  renderLoading(true, saveBtn)
   updateUser(popNameInput.value, popJobInput.value)
   .then((user)=> {
     profileName.textContent = user.name
     profileProfession.textContent = user.about
+    closePopup(popEditProfile)
   })
   .catch((err) => {
     console.error(err);
-  });
-  popupElement.querySelector('.popup__button').textContent = 'Сохранить'
-  closePopup(popupElement)
-}
+  })
+  .finally(() => renderLoading(false, saveBtn))}
+
 
 function addNewCard(evt) {
   evt.preventDefault();
-  const popupElement  = document.querySelector('.popup_is-opened')
-  popupElement.querySelector('.popup__button').textContent = 'Сохранение...'
-
-  const newName = popCreateNewCard.querySelector('[name="place-name"]')
-  const newLink = popCreateNewCard.querySelector('[name="link"]')
-
-  Promise.all([postCard(newName.value,newLink.value), getUser()])
-  .then(([newCardElement, user]) => {
-    appendCard(newCardElement, user._id)
-    newName.value = ''
-    newLink.value = ''
+  const saveBtn = evt.submitter
+  renderLoading(true, saveBtn)
+  postCard(newNameInput.value,newLinkInput.value)
+  .then((newCardElement) => {
+    appendCard(newCardElement, userID)
+    newCardFormElement.reset()
+    closePopup(popCreateNewCard)
   })
   .catch((err) => {
     console.error(err);
-  });
-  popupElement.querySelector('.popup__button').textContent = 'Сохранить'
-  closePopup(popupElement)
-}
+  }).finally(() => renderLoading(false, saveBtn))}
+
 
 function updAvatar(evt) {
   evt.preventDefault();
-  const popupElement  = document.querySelector('.popup_is-opened')
-  popupElement.querySelector('.popup__button').textContent = 'Сохранение...'
-
-  const newLink = popEditAvatar.querySelector('[name="avatar-link"]')
-
-  postAvatar(newLink.value)
+  const saveBtn = evt.submitter
+  renderLoading(true, saveBtn)
+  postAvatar(popAvatarLinkInput.value)
   .then((data) => {
     profileImage.style = `background-image: url('${data.avatar}')`
-    newLink.value = ''
+    profileFormAvatar.reset()
+    closePopup(popEditAvatar)
   })
   .catch((err) => {
     console.error(err);
-  });
-
-  popupElement.querySelector('.popup__button').textContent = 'Сохранить'
-  closePopup(popupElement)
-}
+  })
+  .finally(() => renderLoading(false, saveBtn))}
 
 function openPopupImage (name, link) {
   popImgCaption.textContent = name
@@ -145,6 +155,7 @@ btnEditAvatar.addEventListener('click',(evt) => {
 })
 
 btnCreateNewCard.addEventListener('click',(evt) => {
+  clearValidation(newCardFormElement, validationConfig);
   openPopup(popCreateNewCard)
 })
 
@@ -153,6 +164,7 @@ closeBtns.forEach((el) => {
   el.addEventListener('click', () => {
     closePopup(popupElement)
   })
+
   popupElement.addEventListener('mousedown', (evt)=> {
     if(evt.target === popupElement) {
       closePopup(popupElement)

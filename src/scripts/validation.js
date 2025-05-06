@@ -1,13 +1,5 @@
 // validation block
 
-const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
-}
 
 const showInputError = (formElement, inputElement, errorMessage, validationConfig) => {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
@@ -21,6 +13,7 @@ const hideInputError = (formElement, inputElement, validationConfig) => {
   inputElement.classList.remove(validationConfig.inputErrorClass);
   errorElement.classList.remove(validationConfig.errorClass);
   errorElement.textContent = '';
+  inputElement.setCustomValidity("");
 };
 
 const isValid = (formElement, inputElement, validationConfig) => {
@@ -77,12 +70,9 @@ const clearValidation = (formElement, validationConfig) => {
 const enableValidation = (validationConfig) => {
   const formList = Array.from(document.querySelectorAll(validationConfig.formSelector));
   formList.forEach((formElement) => {
-    formElement.addEventListener('submit', function (evt) {
-      evt.preventDefault();
-    });
     setEventListeners(formElement, validationConfig);
   });
 };
 
 
-export {validationConfig, enableValidation, clearValidation}
+export {enableValidation, clearValidation}
